@@ -10,11 +10,12 @@
 /// 2013, 2023
 
 // Student authors (fill in below):
-// NMec:  Name:
+// NMec: 113475 Name: Carolina Silva
+// NMec: 114624 Name: Sebastião Teixeira
 // 
 // 
 // 
-// Date:
+// Date: 2023-11-03
 //
 
 #include "image8bit.h"
