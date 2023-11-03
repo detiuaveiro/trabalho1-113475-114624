@@ -147,13 +147,25 @@ static int check(int condition, const char* failmsg) {
 void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
-  // Name other counters here...
+  // Add more instrumentation names here...
+  InstrName[1] = "foo";
+  InstrName[2] = "bar";
+  InstrName[3] = "baz";
+  InstrName[4] = "qux";
+  InstrName[5] = "quux";
+
+
   
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
+#define FOO InstrCount[1]
+#define BAR InstrCount[2]
+#define BAZ InstrCount[3]
+#define QUX InstrCount[4]
+#define QUUX InstrCount[5]
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
@@ -172,7 +184,30 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (width >= 0);
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
-  // Insert your code here!
+  Image img = (Image)malloc(sizeof(struct image));
+  if (img == NULL) {
+    errCause = "Memory allocation error";
+    return NULL;
+  }
+
+  img->width = width;
+  img->height = height;
+  img->maxval = maxval;
+
+  // Allocate memory for the pixel data
+  img->pixel = (uint8*)malloc(sizeof(uint8) * width * height);
+  if (img->pixel == NULL) {
+    free(img); // Clean up the partially allocated image structure
+    errCause = "Memory allocation error for pixel data";
+    return NULL;
+  }
+
+  // Initialize the pixel data, set all pixels to 0 (black)
+  for (int i = 0; i < width * height; i++) {
+    img->pixel[i] = 0;
+  }
+
+  return img;
 }
 
 /// Destroy the image pointed to by (*imgp).
@@ -183,6 +218,14 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 void ImageDestroy(Image* imgp) { ///
   assert (imgp != NULL);
   // Insert your code here!
+
+  if (*imgp != NULL) {
+    // Deallocate the pixel data
+    free((*imgp)->pixel);
+    // Deallocate the image structure itself
+    free(*imgp);
+    *imgp = NULL;
+  }
 }
 
 
