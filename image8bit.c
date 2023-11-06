@@ -337,7 +337,17 @@ int ImageMaxval(Image img) { ///
 /// *max is set to the maximum.
 void ImageStats(Image img, uint8* min, uint8* max) { ///
   assert (img != NULL);
-  // Insert your code here!
+  assert (min != NULL);
+  assert (max != NULL);
+  
+  *min = PixMax;
+  *max = 0;
+  for (int i = 0; i < img->width * img->height; i++) {
+    if (img->pixel[i] < *min) *min = img->pixel[i];
+    if (img->pixel[i] > *max) *max = img->pixel[i];
+  }
+  // find min and max gray levels in image
+  
 }
 
 /// Check if pixel position (x,y) is inside img.
@@ -364,7 +374,12 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
 // The returned index must satisfy (0 <= index < img->width*img->height)
 static inline int G(Image img, int x, int y) {
   int index;
-  // Insert your code here!
+  assert (img != NULL);
+  assert (ImageValidPos(img, x, y));
+  index = y*img->width + x;
+  if (index < 0) index = 0;
+  if (index >= img->width*img->height) index = img->width*img->height - 1;
+
   assert (0 <= index && index < img->width*img->height);
   return index;
 }
