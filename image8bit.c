@@ -418,6 +418,7 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 /// resulting in a "photographic negative" effect.
 void ImageNegative(Image img) { ///
   assert (img != NULL);
+<<<<<<< HEAD
   int width = img->width;
   int height = img->height;
 
@@ -429,6 +430,11 @@ void ImageNegative(Image img) { ///
             img->pixel[i * width + j] = PixMax - currentPixel;
         }
     }
+=======
+  // Insert your code here!
+	for (int i = 0; i < img->width * img->height; i++)
+		img->pixel[i] = img->maxval - img->pixel[i];
+>>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 /// Apply threshold to image.
@@ -436,6 +442,7 @@ void ImageNegative(Image img) { ///
 /// all pixels with level>=thr to white (maxval).
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
+<<<<<<< HEAD
   int width = img->width;
     int height = img->height;
     uint8 maxval = img->maxval;
@@ -453,6 +460,11 @@ void ImageThreshold(Image img, uint8 thr) { ///
             }
         }
     }
+=======
+  // Insert your code here!
+	for (int i = 0; i < img->width * img->height; i++)
+		img->pixel[i] = img->pixel[i] >= thr ? img->maxval : 0;
+>>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 /// Brighten image by a factor.
@@ -462,6 +474,7 @@ void ImageThreshold(Image img, uint8 thr) { ///
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
   // ? assert (factor >= 0.0);
+<<<<<<< HEAD
   assert(factor >= 0.0); // Se desejar garantir que o fator seja positivo
     
     int width = img->width;
@@ -483,6 +496,13 @@ void ImageBrighten(Image img, double factor) { ///
             }
         }
     }
+=======
+  // Insert your code here!
+	for (int i = 0; i < img->width * img->height; i++) {
+		int newVal = img->pixel[i] * factor;
+		img->pixel[i] = newVal >= img->maxval ? img->maxval : newVal; 
+	}
+>>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 
