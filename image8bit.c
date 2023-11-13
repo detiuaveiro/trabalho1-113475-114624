@@ -659,7 +659,30 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
-  // Insert your code here!
+  
+  int width2 = img2->width;
+    int height2 = img2->height;
+
+    // Verifica se a subimagem cabe dentro da imagem maior
+    if (!ImageValidRect(img1, x, y, width2, height2)) {
+        return 0;
+    }
+
+    for (int i = 0; i < height2; i++) {
+        for (int j = 0; j < width2; j++) {
+            // Obtém o valor do pixel das duas imagens
+            uint8 pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
+            uint8 pixel2 = img2->pixel[i * width2 + j];
+
+            // Se um único pixel não corresponder, retorna 0 (falso)
+            if (pixel1 != pixel2) {
+                return 0;
+            }
+        }
+    }
+
+    // Se todos os pixels corresponderem, retorna 1 (verdadeiro)
+    return 1;
 }
 
 /// Locate a subimage inside another image.
