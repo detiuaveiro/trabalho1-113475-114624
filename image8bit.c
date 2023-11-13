@@ -414,7 +414,17 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 /// resulting in a "photographic negative" effect.
 void ImageNegative(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+  int width = img->width;
+  int height = img->height;
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Obter o valor do pixel
+            uint8 currentPixel = img->pixel[i * width + j];
+            // Inverter o valor do pixel (subtraindo do máximo valor possível para 8 bits)
+            img->pixel[i * width + j] = PixMax - currentPixel;
+        }
+    }
 }
 
 /// Apply threshold to image.
@@ -422,7 +432,23 @@ void ImageNegative(Image img) { ///
 /// all pixels with level>=thr to white (maxval).
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
-  // Insert your code here!
+  int width = img->width;
+    int height = img->height;
+    uint8 maxval = img->maxval;
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Obter o valor do pixel
+            uint8 currentPixel = img->pixel[i * width + j];
+            
+            // Aplicar o limiar
+            if (currentPixel < thr) {
+                img->pixel[i * width + j] = 0;  // Tornar pixels abaixo do limiar em preto
+            } else {
+                img->pixel[i * width + j] = maxval;  // Tornar pixels iguais ou acima do limiar em branco
+            }
+        }
+    }
 }
 
 /// Brighten image by a factor.
@@ -432,7 +458,27 @@ void ImageThreshold(Image img, uint8 thr) { ///
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
   // ? assert (factor >= 0.0);
-  // Insert your code here!
+  assert(factor >= 0.0); // Se desejar garantir que o fator seja positivo
+    
+    int width = img->width;
+    int height = img->height;
+    uint8 maxval = img->maxval;
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Obter o valor do pixel
+            uint8 currentPixel = img->pixel[i * width + j];
+
+            // Aplicar o fator de brilho
+            double brightenedPixel = currentPixel * factor;
+            // Saturar o valor para o máximo, se necessário
+            if (brightenedPixel > maxval) {
+                img->pixel[i * width + j] = maxval;
+            } else {
+                img->pixel[i * width + j] = (uint8)brightenedPixel;
+            }
+        }
+    }
 }
 
 
@@ -459,7 +505,27 @@ void ImageBrighten(Image img, double factor) { ///
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+  int width = img->width;
+    int height = img->height;
+    uint8 maxval = img->maxval;
+
+    // Criar uma nova imagem com dimensões trocadas para a rotação
+    Image rotatedImage = ImageCreate(height, width, maxval);
+    if (rotatedImage == NULL) {
+        errCause = "Memory allocation error for rotated image";
+        return NULL;
+    }
+  for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Obter o valor do pixel da imagem original
+            uint8 currentPixel = img->pixel[i * width + j];
+            // Preencher a nova imagem com os valores rotacionados
+            rotatedImage->pixel[(width - j - 1) * height + i] = currentPixel;
+        }
+    }
+
+    return rotatedImage;
+
 }
 
 /// Mirror an image = flip left-right.
