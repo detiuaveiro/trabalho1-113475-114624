@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "instrumentation.h"
@@ -448,8 +449,9 @@ void ImageBrighten(Image img, double factor) { ///
 
     for (int i = 0; i < height * width; i++) {
             // Saturar o valor para o máximo, se necessário
-			uint8_t newPixel = img->pixel[i] * factor;
-            img->pixel[i] = img->pixel[i] > (float) maxval / factor ? maxval : newPixel;
+			double _newPixel = factor * img->pixel[i];
+			uint8 newPixel = (_newPixel - (uint8)_newPixel >= 0.5) ? (uint8) (_newPixel) + 1 : (uint8) (_newPixel); // Arredondamento
+            img->pixel[i] = newPixel >= maxval ? maxval : newPixel;
     }
 }
 
@@ -612,10 +614,11 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
             uint8 pixel2 = img2->pixel[i * width2 + j];
 
             // Calcula o novo valor do pixel após a mesclagem
-            double blendedPixel = alpha * pixel2 + (1.0 - alpha) * pixel1;
+            double _blendedPixel = alpha * pixel2 + (1.0 - alpha) * pixel1;
+			uint8 blendedPixel = (_blendedPixel - (uint8)_blendedPixel >= 0.5) ? (uint8) (_blendedPixel) + 1 : (uint8) (_blendedPixel); // Arredondamento (saturação
 
             // Satura o valor resultante para o intervalo [0, maxval]
-            uint8 finalPixel = (blendedPixel > img1->maxval) ? img1->maxval : (blendedPixel < 0) ? 0 : (uint8)blendedPixel;
+            uint8 finalPixel = (blendedPixel > img1->maxval) ? img1->maxval : (uint8)blendedPixel;
 
             // Atualiza o pixel na imagem maior (img1)
             img1->pixel[(y + i) * img1->width + (x + j)] = finalPixel;
