@@ -418,23 +418,9 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 /// resulting in a "photographic negative" effect.
 void ImageNegative(Image img) { ///
   assert (img != NULL);
-<<<<<<< HEAD
-  int width = img->width;
-  int height = img->height;
-
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            // Obter o valor do pixel
-            uint8 currentPixel = img->pixel[i * width + j];
-            // Inverter o valor do pixel (subtraindo do máximo valor possível para 8 bits)
-            img->pixel[i * width + j] = PixMax - currentPixel;
-        }
-    }
-=======
   // Insert your code here!
 	for (int i = 0; i < img->width * img->height; i++)
 		img->pixel[i] = img->maxval - img->pixel[i];
->>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 /// Apply threshold to image.
@@ -442,29 +428,9 @@ void ImageNegative(Image img) { ///
 /// all pixels with level>=thr to white (maxval).
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
-<<<<<<< HEAD
-  int width = img->width;
-    int height = img->height;
-    uint8 maxval = img->maxval;
-
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            // Obter o valor do pixel
-            uint8 currentPixel = img->pixel[i * width + j];
-            
-            // Aplicar o limiar
-            if (currentPixel < thr) {
-                img->pixel[i * width + j] = 0;  // Tornar pixels abaixo do limiar em preto
-            } else {
-                img->pixel[i * width + j] = maxval;  // Tornar pixels iguais ou acima do limiar em branco
-            }
-        }
-    }
-=======
   // Insert your code here!
 	for (int i = 0; i < img->width * img->height; i++)
 		img->pixel[i] = img->pixel[i] >= thr ? img->maxval : 0;
->>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 /// Brighten image by a factor.
@@ -474,35 +440,17 @@ void ImageThreshold(Image img, uint8 thr) { ///
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
   // ? assert (factor >= 0.0);
-<<<<<<< HEAD
   assert(factor >= 0.0); // Se desejar garantir que o fator seja positivo
     
     int width = img->width;
     int height = img->height;
-    uint8 maxval = img->maxval;
+    uint8_t maxval = img->maxval;
 
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            // Obter o valor do pixel
-            uint8 currentPixel = img->pixel[i * width + j];
-
-            // Aplicar o fator de brilho
-            double brightenedPixel = currentPixel * factor;
+    for (int i = 0; i < height * width; i++) {
             // Saturar o valor para o máximo, se necessário
-            if (brightenedPixel > maxval) {
-                img->pixel[i * width + j] = maxval;
-            } else {
-                img->pixel[i * width + j] = (uint8)brightenedPixel;
-            }
-        }
+			uint8_t newPixel = img->pixel[i] * factor;
+            img->pixel[i] = img->pixel[i] > (float) maxval / factor ? maxval : newPixel;
     }
-=======
-  // Insert your code here!
-	for (int i = 0; i < img->width * img->height; i++) {
-		int newVal = img->pixel[i] * factor;
-		img->pixel[i] = newVal >= img->maxval ? img->maxval : newVal; 
-	}
->>>>>>> 91cb506 (Add: all the others pixel transformation functions)
 }
 
 
@@ -530,15 +478,15 @@ void ImageBrighten(Image img, double factor) { ///
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
   int width = img->width;
-    int height = img->height;
-    uint8 maxval = img->maxval;
+  int height = img->height;
+  uint8 maxval = img->maxval;
 
-    // Criar uma nova imagem com dimensões trocadas para a rotação
-    Image rotatedImage = ImageCreate(height, width, maxval);
-    if (rotatedImage == NULL) {
-        errCause = "Memory allocation error for rotated image";
-        return NULL;
-    }
+  // Criar uma nova imagem com dimensões trocadas para a rotação
+  Image rotatedImage = ImageCreate(height, width, maxval);
+  if (rotatedImage == NULL) {
+    errCause = "Memory allocation error for rotated image";
+	return NULL;
+  }
   for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             // Obter o valor do pixel da imagem original
