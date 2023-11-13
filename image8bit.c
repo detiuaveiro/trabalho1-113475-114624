@@ -340,14 +340,17 @@ void ImageStats(Image img, uint8* min, uint8* max) { ///
   assert (min != NULL);
   assert (max != NULL);
   
-  *min = PixMax;
-  *max = 0;
-  for (int i = 0; i < img->width * img->height; i++) {
-    if (img->pixel[i] < *min) *min = img->pixel[i];
-    if (img->pixel[i] > *max) *max = img->pixel[i];
-  }
-  // find min and max gray levels in image
-  
+  *min = PixMax; // Configurando o mínimo para o valor máximo possível inicialmente
+    *max = 0;      // Configurando o máximo para 0 inicialmente
+
+    for (int i = 0; i < img->width * img->height; i++) {
+        if (img->pixel[i] < *min) {
+            *min = img->pixel[i]; // Atualiza o mínimo se encontrar um valor menor
+        }
+        if (img->pixel[i] > *max) {
+            *max = img->pixel[i]; // Atualiza o máximo se encontrar um valor maior
+        }
+    }
 }
 
 /// Check if pixel position (x,y) is inside img.
