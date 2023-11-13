@@ -576,7 +576,24 @@ Image ImageMirror(Image img) { ///
 Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
-  // Insert your code here!
+  uint8 maxval = img->maxval;
+    // Cria uma nova imagem com as dimensões do recorte
+    Image croppedImage = ImageCreate(w, h, maxval);
+    if (croppedImage == NULL) {
+        errCause = "Memory allocation error for cropped image";
+        return NULL;
+    }
+
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            // Obtém o valor do pixel da imagem original na área recortada
+            uint8 currentPixel = img->pixel[(y + i) * img->width + (x + j)];
+            // Preenche a nova imagem com os valores da área recortada
+            croppedImage->pixel[i * w + j] = currentPixel;
+        }
+    }
+
+    return croppedImage;
 }
 
 
