@@ -359,7 +359,8 @@ int ImageValidPos(Image img, int x, int y) { ///
 /// Check if rectangular area (x,y,w,h) is completely inside img.
 int ImageValidRect(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
-  // Insert your code here!
+  // Verifica se as coordenadas superior esquerda e inferior direita do retângulo estão dentro dos limites da imagem
+    return ImageValidPos(img, x, y) && ImageValidPos(img, x + w - 1, y + h - 1);
 }
 
 /// Pixel get & set operations
@@ -537,7 +538,27 @@ Image ImageRotate(Image img) { ///
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageMirror(Image img) { ///
   assert (img != NULL);
-  // Insert your code here!
+  int width = img->width;
+    int height = img->height;
+    uint8 maxval = img->maxval;
+
+    // Cria uma nova imagem
+    Image mirroredImage = ImageCreate(width, height, maxval);
+    if (mirroredImage == NULL) {
+        errCause = "Memory allocation error for mirrored image";
+        return NULL;
+    }
+
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Obtém o valor do pixel da imagem original
+            uint8 currentPixel = img->pixel[i * width + j];
+            // Preenche a nova imagem com os valores refletidos horizontalmente
+            mirroredImage->pixel[i * width + (width - j - 1)] = currentPixel;
+        }
+    }
+
+    return mirroredImage;
 }
 
 /// Crop a rectangular subimage from img.
