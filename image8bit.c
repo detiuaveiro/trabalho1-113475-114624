@@ -727,5 +727,37 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
+  int width = img->width;
+    int height = img->height;
+
+    Image tempImg = ImageCreate(width, height, img->maxval); // Criar uma imagem temporária
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int count = 0;
+            int sum = 0;
+
+            for (int j = -dy; j <= dy; j++) {
+                for (int i = -dx; i <= dx; i++) {
+                    int newX = x + i;
+                    int newY = y + j;
+
+                    if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
+                        count++;
+                        sum += img->pixel[newY * width + newX];
+                    }
+                }
+            }
+            tempImg->pixel[y * width + x] = (count > 0) ? (sum / count) : img->pixel[y * width + x];
+        }
+    }
+
+    // Copiar a imagem temporária de volta para a imagem original
+    for (int i = 0; i < width * height; i++) {
+        img->pixel[i] = tempImg->pixel[i];
+    }
+
+    // Destruir a imagem temporária
+    ImageDestroy(&tempImg);
 }
 
