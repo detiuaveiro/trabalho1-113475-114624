@@ -692,7 +692,30 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
 int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
-  // Insert your code here!
+
+  int width1 = img1->width;
+  int height1 = img1->height;
+  int width2 = img2->width;
+  int height2 = img2->height;
+
+  // Verifica se as dimensões da subimagem são menores ou iguais às dimensões da imagem maior
+    if (width2 > width1 || height2 > height1) {
+        return 0;
+    }
+
+    for (int i = 0; i <= height1 - height2; i++) {
+        for (int j = 0; j <= width1 - width2; j++) {
+            // Verifica se há correspondência da subimagem na posição atual
+            if (ImageMatchSubImage(img1, j, i, img2)) {
+                *px = j; // Define a posição x onde a subimagem foi localizada
+                *py = i; // Define a posição y onde a subimagem foi localizada
+                return 1; // Retorna 1 (verdadeiro) indicando uma correspondência
+            }
+        }
+    }
+
+    // Se nenhuma correspondência for encontrada, retorna 0 (falso)
+    return 0;
 }
 
 
