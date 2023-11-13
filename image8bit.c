@@ -607,7 +607,17 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+  int width2 = img2->width;
+    int height2 = img2->height;
+
+    for (int i = 0; i < height2; i++) {
+        for (int j = 0; j < width2; j++) {
+            // Obtém o valor do pixel da imagem a ser colada
+            uint8 currentPixel = img2->pixel[i * width2 + j];
+            // Preenche a imagem maior na posição correta com os valores da imagem a ser colada
+            img1->pixel[(y + i) * img1->width + (x + j)] = currentPixel;
+        }
+    }
 }
 
 /// Blend an image into a larger image.
@@ -620,7 +630,26 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
+
+  int width2 = img2->width;
+    int height2 = img2->height;
+
+    for (int i = 0; i < height2; i++) {
+        for (int j = 0; j < width2; j++) {
+            // Obtém o valor do pixel das duas imagens
+            uint8 pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
+            uint8 pixel2 = img2->pixel[i * width2 + j];
+
+            // Calcula o novo valor do pixel após a mesclagem
+            double blendedPixel = alpha * pixel2 + (1.0 - alpha) * pixel1;
+
+            // Satura o valor resultante para o intervalo [0, maxval]
+            uint8 finalPixel = (blendedPixel > img1->maxval) ? img1->maxval : (blendedPixel < 0) ? 0 : (uint8)blendedPixel;
+
+            // Atualiza o pixel na imagem maior (img1)
+            img1->pixel[(y + i) * img1->width + (x + j)] = finalPixel;
+        }
+    }
 }
 
 /// Compare an image to a subimage of a larger image.
