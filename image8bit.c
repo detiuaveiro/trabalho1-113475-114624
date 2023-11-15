@@ -449,12 +449,10 @@ void ImageBrighten(Image img, double factor) { ///
 
     for (int i = 0; i < height * width; i++) {
             // Saturar o valor para o máximo, se necessário
-			double _newPixel = factor * img->pixel[i];
-			uint8 newPixel = (_newPixel - (uint8)_newPixel >= 0.5) ? (uint8) (_newPixel) + 1 : (uint8) (_newPixel); // Arredondamento
-            img->pixel[i] = newPixel >= maxval ? maxval : newPixel;
-    }
+			img->pixel[i] = (uint8)(img->pixel[i] * factor + 0.5);
+    if (img->pixel[i] > img->maxval) img->pixel[i] = img->maxval;
 }
-
+}
 
 /// Geometric transformations
 
