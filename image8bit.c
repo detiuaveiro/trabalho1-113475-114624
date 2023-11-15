@@ -692,7 +692,7 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 
 
 static inline uint8 roundPixel(double pixel) {
-  return (uint8) pixel + 0.5;
+  return (uint8) (pixel + 0.5);
 }
 
 /// Filtering
