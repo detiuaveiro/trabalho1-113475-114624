@@ -445,7 +445,6 @@ void ImageBrighten(Image img, double factor) { ///
     
     int width = img->width;
     int height = img->height;
-    uint8_t maxval = img->maxval;
 
     for (int i = 0; i < height * width; i++) {
             // Saturar o valor para o máximo, se necessário
@@ -490,7 +489,7 @@ Image ImageRotate(Image img) { ///
   for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             // Obter o valor do pixel da imagem original
-            uint8 currentPixel = img->pixel[i * width + j];
+            uint8 currentPixel = ImageGetPixel(img, j, i);
             // Preencher a nova imagem com os valores rotacionados
             rotatedImage->pixel[(width - j - 1) * height + i] = currentPixel;
         }
@@ -523,9 +522,9 @@ Image ImageMirror(Image img) { ///
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             // Obtém o valor do pixel da imagem original
-            uint8 currentPixel = img->pixel[i * width + j];
+            uint8 currentPixel = ImageGetPixel(img, j, i);
             // Preenche a nova imagem com os valores refletidos horizontalmente
-            mirroredImage->pixel[i * width + (width - j - 1)] = currentPixel;
+            ImageSetPixel(mirroredImage, width - j - 1, i, currentPixel);
         }
     }
 
@@ -691,55 +690,64 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 }
 
 
+
+static inline uint8 roundPixel(double pixel) {
+  return (uint8) pixel + 0.5;
+}
+
 /// Filtering
 
 /// Blur an image by applying a (2dx+1)x(2dy+1) mean filter.
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) {
-    if (img == NULL || img->pixel == NULL) {
-        // Verificar se a imagem e a matriz de pixels são válidas
-        fprintf(stderr, "Invalid image or pixel array.\n");
-        return;
-    }
-
-    int width = img->width;
+void ImageBlur(Image img, int dx, int dy) { ///
+  // Insert your code here!
+  	int width = img->width;
     int height = img->height;
-    int totalPixels = width * height;
+	int totalPixels = width * height;
+	
 
-    // Verificar se a largura e altura são válidas
-    if (width <= 0 || height <= 0) {
-        fprintf(stderr, "Invalid image dimensions.\n");
-        return;
-    }
-
-    Image tempImg = ImageCreate(width, height, img->maxval);
-    if (tempImg == NULL || tempImg->pixel == NULL) {
-        // Verificar se a alocação de memória para a imagem temporária foi bem-sucedida
-        fprintf(stderr, "Memory allocation error for temporary image.\n");
-        return;
-    }
+    Image tempImg = ImageCreate(width, height, img->maxval); // Criar uma imagem temporária
+	int sum;
 
     for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            int count = 0;
-            int sum = 0;
+		int y1 = y - dy > 0 ? y - dy : 0;
+		int y2 = y + dy < height ? y + dy : height - 1;
 
-            for (int j = -dy; j <= dy; j++) {
-                for (int i = -dx; i <= dx; i++) {
-                    int newX = x + i;
-                    int newY = y + j;
+		sum = 0;
+		for (int px = 0; px <= dx /* as px < dx+1 */; px++) {
+			for (int py = y1; py <= y2; py++) {
+				sum += ImageGetPixel(img, px, py);
+			}
+		}
 
-                    if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
-                        count++;
-                        sum += img->pixel[newY * width + newX];
-                    }
-                }
-            }
+		ImageSetPixel(tempImg, 0, y, roundPixel((double) sum / ((dx + 1) * (y2 - y1 + 1))));
+		
+		int previous_x1 = 0;
+		int previous_x2 = dx;
+		for (int x = 1; x < width; x++) {
+			int x1 = x - dx > 0 ? x - dx : 0;
+			int x2 = x + dx < height ? x + dx : width - 1;
 
-            tempImg->pixel[y * width + x] = (count > 0) ? (sum / count) : img->pixel[y * width + x];
-        }
+			
+			// Subtract the leftmost pixel from the sum
+			// except if the leftmost pixel is the same
+			if (x1 != previous_x1) {
+				for (int py = y1; py <= y2; py++) {
+					sum -= ImageGetPixel(img, previous_x1, py);
+				}
+			}
+			if (x2 != previous_x2) {
+				for (int py = y1; py <= y2; py++) {
+					sum += ImageGetPixel(img, x2, py);
+				}
+			}
+			
+			previous_x1 = x1;
+			previous_x2 = x2;
+			ImageSetPixel(tempImg, x, y, roundPixel((double) sum / ((x2 - x1 + 1) * (y2 - y1 + 1))));
+		}
     }
 
     // Copiar a imagem temporária de volta para a imagem original
