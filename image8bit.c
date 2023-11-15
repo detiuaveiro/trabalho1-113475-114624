@@ -693,18 +693,31 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 
 /// Filtering
 
-/// Blur an image by a applying a (2dx+1)x(2dy+1) mean filter.
+/// Blur an image by applying a (2dx+1)x(2dy+1) mean filter.
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) {
+    if (img == NULL || img->pixel == NULL) {
+        // Verificar se a imagem e a matriz de pixels são válidas
+        fprintf(stderr, "Invalid image or pixel array.\n");
+        return;
+    }
+
     int width = img->width;
     int height = img->height;
     int totalPixels = width * height;
 
+    // Verificar se a largura e altura são válidas
+    if (width <= 0 || height <= 0) {
+        fprintf(stderr, "Invalid image dimensions.\n");
+        return;
+    }
+
     Image tempImg = ImageCreate(width, height, img->maxval);
-    if (tempImg == NULL) {
-        // Trate falha na alocação de memória para a imagem temporária
+    if (tempImg == NULL || tempImg->pixel == NULL) {
+        // Verificar se a alocação de memória para a imagem temporária foi bem-sucedida
+        fprintf(stderr, "Memory allocation error for temporary image.\n");
         return;
     }
 
@@ -737,5 +750,6 @@ void ImageBlur(Image img, int dx, int dy) {
     // Destruir a imagem temporária
     ImageDestroy(&tempImg);
 }
+
 
 
