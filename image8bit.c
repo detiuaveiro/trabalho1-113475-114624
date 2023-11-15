@@ -697,12 +697,16 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
-  // Insert your code here!
-  int width = img->width;
+void ImageBlur(Image img, int dx, int dy) {
+    int width = img->width;
     int height = img->height;
+    int totalPixels = width * height;
 
-    Image tempImg = ImageCreate(width, height, img->maxval); // Criar uma imagem temporária
+    Image tempImg = ImageCreate(width, height, img->maxval);
+    if (tempImg == NULL) {
+        // Trate falha na alocação de memória para a imagem temporária
+        return;
+    }
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -720,16 +724,18 @@ void ImageBlur(Image img, int dx, int dy) { ///
                     }
                 }
             }
+
             tempImg->pixel[y * width + x] = (count > 0) ? (sum / count) : img->pixel[y * width + x];
         }
     }
 
     // Copiar a imagem temporária de volta para a imagem original
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < totalPixels; i++) {
         img->pixel[i] = tempImg->pixel[i];
     }
 
     // Destruir a imagem temporária
     ImageDestroy(&tempImg);
 }
+
 
