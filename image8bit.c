@@ -701,7 +701,7 @@ static inline uint8 roundPixel(double pixel) {
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
+void _ImageBlur_1(Image img, int dx, int dy) { ///
   // Insert your code here!
   	int width = img->width;
     int height = img->height;
@@ -709,21 +709,24 @@ void ImageBlur(Image img, int dx, int dy) { ///
 	
 
     Image tempImg = ImageCreate(width, height, img->maxval); // Criar uma imagem temporária
-	int sum;
 
-    for (int y = 0; y < height; y++) {
-		int y1 = y - dy > 0 ? y - dy : 0;
-		int y2 = y + dy < height ? y + dy : height - 1;
-
-		sum = 0;
-		for (int px = 0; px <= dx /* as px < dx+1 */; px++) {
-			for (int py = y1; py <= y2; py++) {
-				sum += ImageGetPixel(img, px, py);
-			}
+	int hSum = 0;
+	// For first pixel
+	for (int px = 0; px <= dx /* as px < dx+1 */; px++) {
+		for (int py = 0; py <= dy; py++) {
+			hSum += ImageGetPixel(img, px, py);
 		}
+	}
 
-		ImageSetPixel(tempImg, 0, y, roundPixel((double) sum / ((dx + 1) * (y2 - y1 + 1))));
-		
+	int previous_y1 = 0;
+	int previous_y2 = dy;
+	int y1 = 0;
+	int y2 = dy;
+    for (int y = 0; y < height; ) {
+		ImageSetPixel(tempImg, 0, y, roundPixel((double) hSum / ((dx + 1) * (y2 - y1 + 1))));
+
+		// For remaining pixels in each row
+		int wSum = hSum;
 		int previous_x1 = 0;
 		int previous_x2 = dx;
 		for (int x = 1; x < width; x++) {
@@ -735,19 +738,40 @@ void ImageBlur(Image img, int dx, int dy) { ///
 			// except if the leftmost pixel is the same
 			if (x1 != previous_x1) {
 				for (int py = y1; py <= y2; py++) {
-					sum -= ImageGetPixel(img, previous_x1, py);
+					wSum -= ImageGetPixel(img, previous_x1, py);
 				}
 			}
 			if (x2 != previous_x2) {
 				for (int py = y1; py <= y2; py++) {
-					sum += ImageGetPixel(img, x2, py);
+					wSum += ImageGetPixel(img, x2, py);
 				}
 			}
 			
 			previous_x1 = x1;
 			previous_x2 = x2;
-			ImageSetPixel(tempImg, x, y, roundPixel((double) sum / ((x2 - x1 + 1) * (y2 - y1 + 1))));
+			ImageSetPixel(tempImg, x, y, roundPixel((double) wSum / ((x2 - x1 + 1) * (y2 - y1 + 1))));
 		}
+		
+		y++; // Next row
+		previous_y1 = y1;
+		previous_y2 = y2;
+		y1 = y - dy > 0 ? y - dy : 0;
+		y2 = y + dy < height ? y + dy : height - 1;
+
+		// For first pixel in next row
+		if (y1 != previous_y1) {
+			for (int px = 0; px <= dx; px++) {
+				hSum -= ImageGetPixel(img, px, previous_y1);
+			}
+		}
+
+		if (y2 != previous_y2) {
+			for (int px = 0; px <= dx; px++) {
+				hSum += ImageGetPixel(img, px, y2);
+			}
+		}
+		
+
     }
 
     // Copiar a imagem temporária de volta para a imagem original
@@ -759,5 +783,85 @@ void ImageBlur(Image img, int dx, int dy) { ///
     ImageDestroy(&tempImg);
 }
 
+void _ImageBlur_2(Image img, int dx, int dy) {
+	long *summed_table = (long *) malloc(sizeof(long) * img->width * img->height);
+	
+	uint8 *firstPixel = img->pixel;
+	uint8 *last_currentRow_Pixel = firstPixel + img->width;
+	uint8 *lastPixel = firstPixel + img->width * img->height;
+	uint8 *currentPixel = firstPixel;
+	
+	long *firstSum = summed_table;
+	long *currentSum = firstSum;
+	
+	// For first row
+	// For first pixel of first row
+	*currentSum = *currentPixel;
+	currentPixel++;
+	currentSum++;
+	// For remaining pixels of first row
+	while(currentPixel < last_currentRow_Pixel) {
+		*currentSum = *currentPixel + *(currentSum - 1);
+		currentPixel++;
+		currentSum++;
+	}
+	last_currentRow_Pixel += img->width;
 
+	// For remaining rows
+	while(currentPixel < lastPixel) {
+		// For first pixel of remaining rows
+		*currentSum = *currentPixel + *(currentSum - img->width);
+		currentPixel++;
+		currentSum++;
+		// For remaining pixels of remaining rows
+		while (currentPixel < last_currentRow_Pixel) {
+			*currentSum = *currentPixel + *(currentSum - img->width) + *(currentSum - 1) - *(currentSum - img->width - 1);
+			currentPixel++;
+			currentSum++;
+		}
+		last_currentRow_Pixel += img->width;
+	}
+
+
+	
+	// Finaly, summed table is ready to use
+	for(int y = 0; y < img->height; y++) {
+		for (int x = 0; x < img->width; x++) {
+			int x1 = x - dx - 1;
+			int x2 = x + dx < img->width ? x + dx : img->width - 1;
+			int y1 = y - dy - 1;
+			int y2 = y + dy < img->height ? y + dy : img->height - 1;
+
+			int area = (1+x2-(x1>=0 ? x1 + 1 : 0)) * (1+y2-(y1>=0 ? y1 + 1 : 0));
+
+			ImageSetPixel(img, x, y,
+					roundPixel((double) (
+							*(summed_table + G(img, x2, y2))
+							- (x1 >= 0 ? *(summed_table + G(img, x1, y2)) : 0)
+							- (y1 >= 0 ? *(summed_table + G(img, x2, y1)) : 0)
+							+ (x1 >= 0 && y1 >= 0 ? *(summed_table + G(img, x1, y1)) : 0) 
+							)
+						/ area)
+					);
+		}
+	}
+
+}
+
+#include <time.h>
+void ImageBlur(Image img, int dx, int dy) { ///
+  assert (img != NULL);
+  assert (dx >= 0);
+  assert (dy >= 0);
+  // Insert your code here!
+  clock_t start, end;
+  double elapsed;
+  start = clock();
+
+  _ImageBlur_2(img, dx, dy);
+  
+  end = clock();
+  elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
+  printf("Elapsed time: %f\n", elapsed);
+}
 
