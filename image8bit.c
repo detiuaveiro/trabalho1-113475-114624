@@ -579,7 +579,7 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   int width2 = img2->width;
     int height2 = img2->height;
-
+	img1->maxval = img1->maxval > img2->maxval ? img1->maxval : img2->maxval; // O valor máximo da imagem maior será o maior entre os valores máximos das duas imagens
     for (int i = 0; i < height2; i++) {
         for (int j = 0; j < width2; j++) {
             // Obtém o valor do pixel da imagem a ser colada
@@ -603,6 +603,7 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
 
   int width2 = img2->width;
     int height2 = img2->height;
+	img1->maxval = img1->maxval > img2->maxval ? img1->maxval : img2->maxval; // O valor máximo da imagem maior será o maior entre os valores máximos das duas imagens
 
     for (int i = 0; i < height2; i++) {
         for (int j = 0; j < width2; j++) {
