@@ -52,6 +52,18 @@ int main(int argc, char* argv[]) {
 
   ImageDestroy(&img1);
   ImageDestroy(&img2);
+  
+  //Testes para a função ImageLocateSubImage
+  Image img3 = ImageLoad("img3.pgm");
+  Image img4 = ImageLoad("img4.pgm");
+  Image img5 = ImageLoad("img5.pgm");
+
+  //Testes para a função ImageBlur
+  Image img6 = ImageLoad("img6.pgm");
+  Image img7 = ImageLoad("img7.pgm");
+  Image img8 = ImageLoad("img8.pgm");
+
+
   return 0;
 }
 

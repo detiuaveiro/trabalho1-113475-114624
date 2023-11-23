@@ -164,9 +164,7 @@ void ImageInit(void) { ///
 // Add more macros here...
 #define FOO InstrCount[1]
 #define BAR InstrCount[2]
-#define BAZ InstrCount[3]
-#define QUX InstrCount[4]
-#define QUUX InstrCount[5]
+
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
