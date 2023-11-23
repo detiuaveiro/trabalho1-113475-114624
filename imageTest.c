@@ -50,19 +50,38 @@ int main(int argc, char* argv[]) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());
   }
 
+  
+
+  // Testes para a função ImageLocateSubImage
+  Image img3 = ImageLoad("./test/original.pgm");
+  Image img4 = ImageLoad("./test/stripes8.pgm");
+  
+  // Testes para a função ImageBlur
+  Image img6 = ImageLoad("./test/chess8.pgm");
+
+  
+  
+  printf("# LocateSubImage image\n");
+  InstrReset(); // para resetar a instrumentação
+  Image img5 = ImageLocateSubImage(img3, 30, 5, img4);
+  if (img5 == NULL) {
+    error(2, errno, "Locating sub-image: %s", ImageErrMsg());
+  }
+  InstrPrint(); // para imprimir a instrumentação
+
+  
+  // image blur
+  printf("# Blur image\n");
+  InstrReset(); // para resetar a instrumentação
+  ImageBlur(&img6, 1, 1);
+  InstrPrint(); // para imprimir a instrumentação
+  
   ImageDestroy(&img1);
   ImageDestroy(&img2);
-  
-  //Testes para a função ImageLocateSubImage
-  Image img3 = ImageLoad("img3.pgm");
-  Image img4 = ImageLoad("img4.pgm");
-  Image img5 = ImageLoad("img5.pgm");
-
-  //Testes para a função ImageBlur
-  Image img6 = ImageLoad("img6.pgm");
-  Image img7 = ImageLoad("img7.pgm");
-  Image img8 = ImageLoad("img8.pgm");
-
+  ImageDestroy(&img3);
+  ImageDestroy(&img4);
+  ImageDestroy(&img5);
+  ImageDestroy(&img6);
 
   return 0;
 }
