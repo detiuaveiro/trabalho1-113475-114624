@@ -149,11 +149,9 @@ void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
   // Add more instrumentation names here...
-  InstrName[1] = "foo";
-  InstrName[2] = "bar";
-  InstrName[3] = "baz";
-  InstrName[4] = "qux";
-  InstrName[5] = "quux";
+  InstrName[1] = "imagelocatesubimage";
+  InstrName[2] = "imageblur";
+ 
 
 
   
@@ -162,8 +160,8 @@ void ImageInit(void) { ///
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
-#define FOO InstrCount[1]
-#define BAR InstrCount[2]
+#define IMAGELOCATESUBIMAGE InstrCount[1]
+#define IMAGEBLUR InstrCount[2]
 
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
@@ -643,7 +641,8 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
             // Obtém o valor do pixel das duas imagens
             uint8 pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
             uint8 pixel2 = img2->pixel[i * width2 + j];
-
+            //Contador imagelocatesubimage
+            IMAGELOCATESUBIMAGE =+ 1;
             // Se um único pixel não corresponder, retorna 0 (falso)
             if (pixel1 != pixel2) {
                 return 0;
@@ -679,6 +678,7 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
             if (ImageMatchSubImage(img1, j, i, img2)) {
                 *px = j; // Define a posição x onde a subimagem foi localizada
                 *py = i; // Define a posição y onde a subimagem foi localizada
+
                 return 1; // Retorna 1 (verdadeiro) indicando uma correspondência
             }
         }
