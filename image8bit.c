@@ -167,6 +167,11 @@ void ImageInit(void) { ///
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
 
+static inline uint8 roundPixel(double pixel) {
+  return (uint8) (pixel + 0.5);
+}
+
+
 /// Image management functions
 
 /// Create a new black image.
@@ -416,8 +421,9 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 void ImageNegative(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
-	for (int i = 0; i < img->width * img->height; i++)
-		img->pixel[i] = img->maxval - img->pixel[i];
+	for (int x = 0; x < img->width; x++)
+		for (int y = 0; y < img->height; y++)
+			ImageSetPixel(img, x, y, img->maxval - ImageGetPixel(img, x, y));
 }
 
 /// Apply threshold to image.
@@ -426,8 +432,9 @@ void ImageNegative(Image img) { ///
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
   // Insert your code here!
-	for (int i = 0; i < img->width * img->height; i++)
-		img->pixel[i] = img->pixel[i] >= thr ? img->maxval : 0;
+	for (int x = 0; x < img->width; x++)
+		for (int y = 0; y < img->height; y++)
+			ImageSetPixel(img, x, y, ImageGetPixel(img, x, y) >= thr ? img->maxval : 0);
 }
 
 /// Brighten image by a factor.
@@ -442,11 +449,13 @@ void ImageBrighten(Image img, double factor) { ///
     int width = img->width;
     int height = img->height;
 
-    for (int i = 0; i < height * width; i++) {
-            // Saturar o valor para o máximo, se necessário
-			img->pixel[i] = (uint8)(img->pixel[i] * factor + 0.5);
-    if (img->pixel[i] > img->maxval) img->pixel[i] = img->maxval;
-}
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++) {
+        	// Saturar o valor para o máximo, se necessário
+			ImageSetPixel(img, x, y, roundPixel(ImageGetPixel(img, x, y) * factor));
+    		if (ImageGetPixel(img, x, y) > img->maxval)
+				ImageSetPixel(img, x, y, img->maxval);
+	}
 }
 
 /// Geometric transformations
@@ -487,7 +496,7 @@ Image ImageRotate(Image img) { ///
             // Obter o valor do pixel da imagem original
             uint8 currentPixel = ImageGetPixel(img, j, i);
             // Preencher a nova imagem com os valores rotacionados
-            rotatedImage->pixel[(width - j - 1) * height + i] = currentPixel;
+            ImageSetPixel(rotatedImage, i, width - j - 1, currentPixel);
         }
     }
 
@@ -690,10 +699,6 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 
 
 
-static inline uint8 roundPixel(double pixel) {
-  return (uint8) (pixel + 0.5);
-}
-
 /// Filtering
 
 /// Blur an image by applying a (2dx+1)x(2dy+1) mean filter.
@@ -847,20 +852,11 @@ void _ImageBlur_2(Image img, int dx, int dy) {
 
 }
 
-#include <time.h>
 void ImageBlur(Image img, int dx, int dy) { ///
   assert (img != NULL);
   assert (dx >= 0);
   assert (dy >= 0);
   // Insert your code here!
-  clock_t start, end;
-  double elapsed;
-  start = clock();
-
   _ImageBlur_2(img, dx, dy);
-  
-  end = clock();
-  elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
-  printf("Elapsed time: %f\n", elapsed);
 }
 
