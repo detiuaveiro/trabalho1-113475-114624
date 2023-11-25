@@ -562,9 +562,9 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
     for (int i = 0; i < h; i++) {
         for (int j = 0; j < w; j++) {
             // Obtém o valor do pixel da imagem original na área recortada
-            uint8 currentPixel = img->pixel[(y + i) * img->width + (x + j)];
+            uint8 currentPixel = ImageGetPixel(img, x + j, y + i);
             // Preenche a nova imagem com os valores da área recortada
-            croppedImage->pixel[i * w + j] = currentPixel;
+            ImageSetPixel(croppedImage, j, i, currentPixel);
         }
     }
 
@@ -588,9 +588,9 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
     for (int i = 0; i < height2; i++) {
         for (int j = 0; j < width2; j++) {
             // Obtém o valor do pixel da imagem a ser colada
-            uint8 currentPixel = img2->pixel[i * width2 + j];
+            uint8 currentPixel = ImageGetPixel(img2, j, i);
             // Preenche a imagem maior na posição correta com os valores da imagem a ser colada
-            img1->pixel[(y + i) * img1->width + (x + j)] = currentPixel;
+            ImageSetPixel(img1, x + j, y + i, currentPixel);
         }
     }
 }
@@ -613,18 +613,18 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
     for (int i = 0; i < height2; i++) {
         for (int j = 0; j < width2; j++) {
             // Obtém o valor do pixel das duas imagens
-            uint8 pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
-            uint8 pixel2 = img2->pixel[i * width2 + j];
+            uint8 pixel1 = ImageGetPixel(img1, x + j, y + i);
+            uint8 pixel2 = ImageGetPixel(img2, j, i);
 
             // Calcula o novo valor do pixel após a mesclagem
             double _blendedPixel = alpha * pixel2 + (1.0 - alpha) * pixel1;
-			uint8 blendedPixel = (_blendedPixel - (uint8)_blendedPixel >= 0.5) ? (uint8) (_blendedPixel) + 1 : (uint8) (_blendedPixel); // Arredondamento (saturação
+			uint8 blendedPixel = roundPixel(_blendedPixel); // Arredondamento (saturação
 
             // Satura o valor resultante para o intervalo [0, maxval]
             uint8 finalPixel = (blendedPixel > img1->maxval) ? img1->maxval : (uint8)blendedPixel;
 
             // Atualiza o pixel na imagem maior (img1)
-            img1->pixel[(y + i) * img1->width + (x + j)] = finalPixel;
+            ImageSetPixel(img1, x + j, y + i, finalPixel);
         }
     }
 }
@@ -648,10 +648,10 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
     for (int i = 0; i < height2; i++) {
         for (int j = 0; j < width2; j++) {
             // Obtém o valor do pixel das duas imagens
-            uint8 pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
-            uint8 pixel2 = img2->pixel[i * width2 + j];
+            uint8 pixel1 = ImageGetPixel(img1, x + j, y + i);
+            uint8 pixel2 = ImageGetPixel(img2, j, i);
             //Contador imagelocatesubimage
-            IMAGELOCATESUBIMAGE =+ 1;
+            IMAGELOCATESUBIMAGE += 1;
             // Se um único pixel não corresponder, retorna 0 (falso)
             if (pixel1 != pixel2) {
                 return 0;
@@ -857,6 +857,6 @@ void ImageBlur(Image img, int dx, int dy) { ///
   assert (dx >= 0);
   assert (dy >= 0);
   // Insert your code here!
-  _ImageBlur_2(img, dx, dy);
+  _ImageBlur_1(img, dx, dy);
 }
 

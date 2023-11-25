@@ -24,7 +24,6 @@ int main(int argc, char* argv[]) {
   }
 
   ImageInit();
-  
   printf("# LOAD image\n");
   InstrReset(); // to reset instrumentation
   Image img1 = ImageLoad(argv[1]);
@@ -36,27 +35,90 @@ int main(int argc, char* argv[]) {
   // Try changing the behaviour of the program by commenting/uncommenting
   // the appropriate lines.
 
-  //img2 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
-  printf("# ROTATE image\n");
-  InstrReset();
-  Image img2 = ImageRotate(img1);
+
+  printf("# LOAD image\n");
+  Image img2 = ImageLoad(argv[1]);
   if (img2 == NULL) {
-    error(2, errno, "Rotating img2: %s", ImageErrMsg());
+    error(2, errno, "Loading %s: %s", argv[1], ImageErrMsg());
   }
+
+  Image img3 = NULL;
+
+
+  printf("\n# NEGATIVE image\n");
+  InstrReset();
+  ImageNegative(img1);
   InstrPrint();
+
+  printf("\n# THRESHOLD image\n"); 
+  InstrReset();
+  ImageThreshold(img1, 100);
+  InstrPrint();
+
+
 
   //ImageNegative(img2);
   //ImageThreshold(img2, 100);
-  printf("# BRIGHTEN image\n");
+  printf("\n# BRIGHTEN image\n");
   InstrReset();
-  ImageBrighten(img2, 1.3);
+  ImageBrighten(img1, 1.3);
 
-  if (ImageSave(img2, argv[2]) == 0) {
+  if (ImageSave(img1, argv[2]) == 0) {
     error(2, errno, "%s: %s", argv[2], ImageErrMsg());
   }
   InstrPrint();
 
-  
+  printf("\n# ROTATE image\n");
+  InstrReset();
+  img3 = ImageRotate(img1);
+  if (img3 == NULL) {
+    error(2, errno, "Rotating img2: %s", ImageErrMsg());
+  }
+  InstrPrint();
+
+  printf("\n# BLEND image\n");
+  InstrReset();
+  ImageBlend(img1, 0, 0, img3, 0.5);
+  InstrPrint();
+
+  printf("\n# MIRROR image\n");
+  InstrReset();
+  ImageDestroy(&img3);
+  img3 = ImageMirror(img1);
+  if (img3 == NULL) {
+	error(2, errno, "Mirroring img2: %s", ImageErrMsg());
+  }
+  InstrPrint();
+
+  printf("\n# CROP image\n");
+  InstrReset();
+  ImageDestroy(&img3);
+  img3 = ImageCrop(img1, ImageWidth(img1)/4, ImageHeight(img1)/4, ImageWidth(img1)/2, ImageHeight(img1)/2);
+  if (img3 == NULL) {
+	error(2, errno, "Cropping img2: %s", ImageErrMsg());
+  }
+  InstrPrint();
+
+  printf("\n# PASTE image\n");
+  InstrReset();
+  ImagePaste(img1, ImageWidth(img1)/3, ImageHeight(img1)/3, img3);
+  InstrPrint();
+
+  printf("\n# IMAGELOCATESUBIMAGE image");
+  InstrReset();
+  int x, y;
+  int success = ImageLocateSubImage(img1, &x, &y, img2);
+  if (!success) {
+	printf(" (Sub-image %s not found in %s)\n", argv[2], argv[1]);
+  } else {
+	printf(" (Sub-image found at (%d, %d))\n", x, y);
+  }
+  InstrPrint();
+
+  printf("\n# BLUR image\n");
+  InstrReset();
+  ImageBlur(img1, 1, 1);
+  InstrPrint();
 
   // Testes para a função ImageLocateSubImage
   /*
