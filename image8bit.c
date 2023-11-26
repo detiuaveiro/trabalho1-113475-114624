@@ -681,8 +681,8 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
         return 0;
     }
 
-    for (int i = 0; i <= height1 - height2; i++) {
-        for (int j = 0; j <= width1 - width2; j++) {
+    for (int i = 0; i < height1 - height2; i++) {
+        for (int j = 0; j < width1 - width2; j++) {
             // Verifica se há correspondência da subimagem na posição atual
             if (ImageMatchSubImage(img1, j, i, img2)) {
                 *px = j; // Define a posição x onde a subimagem foi localizada
@@ -719,6 +719,7 @@ void _ImageBlur_1(Image img, int dx, int dy) { ///
 	for (int px = 0; px <= dx /* as px < dx+1 */; px++) {
 		for (int py = 0; py <= dy; py++) {
 			hSum += ImageGetPixel(img, px, py);
+			IMAGEBLUR++;
 		}
 	}
 
@@ -743,11 +744,13 @@ void _ImageBlur_1(Image img, int dx, int dy) { ///
 			if (x1 != previous_x1) {
 				for (int py = y1; py <= y2; py++) {
 					wSum -= ImageGetPixel(img, previous_x1, py);
+					IMAGEBLUR++;
 				}
 			}
 			if (x2 != previous_x2) {
 				for (int py = y1; py <= y2; py++) {
 					wSum += ImageGetPixel(img, x2, py);
+					IMAGEBLUR++;
 				}
 			}
 			
@@ -766,12 +769,14 @@ void _ImageBlur_1(Image img, int dx, int dy) { ///
 		if (y1 != previous_y1) {
 			for (int px = 0; px <= dx; px++) {
 				hSum -= ImageGetPixel(img, px, previous_y1);
+				IMAGEBLUR++;
 			}
 		}
 
 		if (y2 != previous_y2) {
 			for (int px = 0; px <= dx; px++) {
 				hSum += ImageGetPixel(img, px, y2);
+				IMAGEBLUR++;
 			}
 		}
 		
@@ -803,11 +808,15 @@ void _ImageBlur_2(Image img, int dx, int dy) {
 	*currentSum = *currentPixel;
 	currentPixel++;
 	currentSum++;
+	IMAGEBLUR++;
+	PIXMEM++;
 	// For remaining pixels of first row
 	while(currentPixel < last_currentRow_Pixel) {
 		*currentSum = *currentPixel + *(currentSum - 1);
 		currentPixel++;
 		currentSum++;
+		IMAGEBLUR += 2;
+		PIXMEM++;
 	}
 	last_currentRow_Pixel += img->width;
 
@@ -817,11 +826,16 @@ void _ImageBlur_2(Image img, int dx, int dy) {
 		*currentSum = *currentPixel + *(currentSum - img->width);
 		currentPixel++;
 		currentSum++;
+		IMAGEBLUR += 2;
+		PIXMEM++;
+
 		// For remaining pixels of remaining rows
 		while (currentPixel < last_currentRow_Pixel) {
 			*currentSum = *currentPixel + *(currentSum - img->width) + *(currentSum - 1) - *(currentSum - img->width - 1);
 			currentPixel++;
 			currentSum++;
+			IMAGEBLUR += 4;
+			PIXMEM++;
 		}
 		last_currentRow_Pixel += img->width;
 	}
@@ -838,6 +852,10 @@ void _ImageBlur_2(Image img, int dx, int dy) {
 
 			int area = (1+x2-(x1>=0 ? x1 + 1 : 0)) * (1+y2-(y1>=0 ? y1 + 1 : 0));
 
+			IMAGEBLUR++;
+			if (x1 >= 0) IMAGEBLUR++;
+			if (y1 >= 0) IMAGEBLUR++;
+			if (x1 >= 0 && y1 >= 0) IMAGEBLUR++;
 			ImageSetPixel(img, x, y,
 					roundPixel((double) (
 							*(summed_table + G(img, x2, y2))
@@ -857,6 +875,6 @@ void ImageBlur(Image img, int dx, int dy) { ///
   assert (dx >= 0);
   assert (dy >= 0);
   // Insert your code here!
-  _ImageBlur_1(img, dx, dy);
+  _ImageBlur_2(img, dx, dy);
 }
 

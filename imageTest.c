@@ -76,11 +76,6 @@ int main(int argc, char* argv[]) {
   }
   InstrPrint();
 
-  printf("\n# BLEND image\n");
-  InstrReset();
-  ImageBlend(img1, 0, 0, img3, 0.5);
-  InstrPrint();
-
   printf("\n# MIRROR image\n");
   InstrReset();
   ImageDestroy(&img3);
@@ -99,6 +94,11 @@ int main(int argc, char* argv[]) {
   }
   InstrPrint();
 
+  printf("\n# BLEND image\n");
+  InstrReset();
+  ImageBlend(img1, 0, 0, img3, 0.5);
+  InstrPrint();
+
   printf("\n# PASTE image\n");
   InstrReset();
   ImagePaste(img1, ImageWidth(img1)/3, ImageHeight(img1)/3, img3);
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
   printf("\n# IMAGELOCATESUBIMAGE image");
   InstrReset();
   int x, y;
-  int success = ImageLocateSubImage(img1, &x, &y, img2);
+  int success = ImageLocateSubImage(img1, &x, &y, img3);
   if (!success) {
 	printf(" (Sub-image %s not found in %s)\n", argv[2], argv[1]);
   } else {
